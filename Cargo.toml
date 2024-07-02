@@ -15,11 +15,14 @@ axiom-eth = { git = "https://github.com/axiom-crypto/axiom-eth.git", features = 
     "halo2-axiom",
     "providers",
 ] }
+axiom-query = { tag = "v2.0.17", git = "https://github.com/axiom-crypto/axiom-eth.git", default-features = false, features = ["keygen"]  }
 const-hex = "1.11.1"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 ethers-core = { version = "=2.0.14", features = ["optimism"] }
 ethers-providers = { version = "2.0.14" }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+log = "0.4"
+env_logger = "0.10"
 
 # helper dep tmp
 tokio = { version = "1", features = ["full"] }
