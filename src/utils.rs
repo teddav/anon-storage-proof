@@ -1,21 +1,13 @@
-// use crate::constants::*;
 use anyhow::{Context as _, Result};
-// use axiom_codec::types::{
-//     field_elements::AnySubqueryResult,
-//     native::{Subquery, SubqueryResult},
-// };
 use axiom_eth::{
     mpt::KECCAK_RLP_EMPTY_STRING,
     providers::storage::json_to_mpt_input,
     providers::{block::get_block_rlp, setup_provider},
     storage::circuit::EthStorageInput,
 };
-// use axiom_query::components::subqueries::common::OutputSubqueryShard;
-use ethers_core::types::{Address, Block, Chain, EIP1186ProofResponse, H160, H256};
+use ethers_core::types::{Address, Block, EIP1186ProofResponse, H160, H256};
 use ethers_providers::{Middleware, Provider};
-// use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-// use tiny_keccak::{Hasher, Keccak};
 use tiny_keccak::{Hasher, Keccak};
 
 pub fn concat_bytes64(a: [u8; 32], b: [u8; 32]) -> [u8; 64] {
@@ -32,8 +24,9 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
 }
 
 /// Storage slot of Safe's signedMessages mapping
-pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] =
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+pub const SAFE_SIGNED_MESSAGES_SLOT: [u8; 32] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,
+];
 
 //FROM https://github.com/axiom-crypto/axiom-eth/blob/0a218a7a68c5243305f2cd514d72dae58d536eff/axiom-query/configs/production/all_max.yml#L91
 pub const ACCOUNT_PROOF_MAX_DEPTH: usize = 14;
@@ -51,7 +44,7 @@ pub struct Halo2MultisigInput {
     pub block_number: u32,
     pub block_hash: H256,
     pub header_rlp: Vec<u8>,
-    pub block: Block<H256>
+    pub block: Block<H256>,
 }
 
 pub fn json_to_input(block: Block<H256>, proof: EIP1186ProofResponse) -> EthStorageInput {
@@ -60,13 +53,19 @@ pub fn json_to_input(block: Block<H256>, proof: EIP1186ProofResponse) -> EthStor
     input
 }
 
-pub async fn fetch_input(rpc: &str, safe_address: Address, msg_hash: H256) -> Result<Halo2MultisigInput> {
+pub async fn fetch_input(
+    rpc: &str,
+    safe_address: Address,
+    msg_hash: H256,
+) -> Result<Halo2MultisigInput> {
     let storage_key = keccak256(&concat_bytes64(msg_hash.into(), SAFE_SIGNED_MESSAGES_SLOT));
 
     let provider = Provider::try_from(rpc)?;
     let latest = provider.get_block_number().await?;
     let block = provider.get_block(latest).await?.context("no such block")?;
-    let proof = provider.get_proof(safe_address, vec![storage_key.into()], Some(latest.into())).await?;
+    let proof = provider
+        .get_proof(safe_address, vec![storage_key.into()], Some(latest.into()))
+        .await?;
 
     let storage_hash = if proof.storage_hash.is_zero() {
         // RPC provider may give zero storage hash for empty account, but the correct storage hash should be the null root = keccak256(0x80)
