@@ -1,10 +1,5 @@
 use axiom_eth::{
-    halo2_base::gates::circuit::{BaseCircuitParams, CircuitBuilderStage},
-    halo2_proofs::dev::MockProver,
-    halo2curves::bn256::Fr,
-    rlc::circuit::RlcCircuitParams,
-    storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput},
-    utils::eth_circuit::create_circuit,
+    halo2_base::{gates::circuit::{BaseCircuitParams, CircuitBuilderStage}, utils::fs::gen_srs}, halo2_proofs::dev::MockProver, halo2curves::bn256::Fr, rlc::circuit::RlcCircuitParams, snark_verifier_sdk::{halo2::aggregation::AggregationConfigParams, SHPLONK}, storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput}, utils::{eth_circuit::create_circuit, snark_verifier::create_universal_aggregation_circuit}
 };
 use ethers_core::types::Chain;
 
@@ -75,6 +70,39 @@ async fn main() {
     let account_prover = MockProver::run(20, &account_circuit, instances).unwrap();
 
     println!("{:?}", account_prover.verify());
+
+    ////////////////////////////////////////////////WIP
+    
+    let k = 20;
+    let aggr_params = AggregationConfigParams {
+        degree: k,
+        lookup_bits: (k-1) as usize,
+        num_advice: 19,             
+        num_lookup_advice: 3,
+        num_fixed: 3,                 //USER_FIXED_COLS,
+    };
+    let kzg_params = gen_srs(k as u32);
+
+    let agg_vkey_hash_indices = vec![None, None];
+
+
+    //TODO 
+    // log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ generating storage snark");
+    // let snark_storage = gen_snark_shplonk(&kzg_params, &storage_pk, storage_circuit, Some(&storage_circuit_path));
+    // log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ generating account snark");
+    // let snark_account = gen_snark_shplonk(&kzg_params, &account_pk, account_circuit, Some(&account_circuit_path));
+    let snarks = vec![];
+
+    let (mut circuit, previous_instances, agg_vkey_hash) =
+    create_universal_aggregation_circuit::<SHPLONK>(
+        CircuitBuilderStage::Prover,
+        aggr_params,
+        &kzg_params,
+        snarks.map(|s| s.inner).to_vec(),
+        agg_vkey_hash_indices,
+    );
+
+
 }
 
 // fn get_circuit() {
