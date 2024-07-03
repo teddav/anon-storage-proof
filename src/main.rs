@@ -1,11 +1,34 @@
 use std::fs::File;
 
 use axiom_eth::{
-    halo2_base::{gates::circuit::{BaseCircuitParams, CircuitBuilderStage},utils::halo2::KeygenCircuitIntent, utils::fs::gen_srs}, halo2_proofs::dev::MockProver, halo2curves::bn256::Fr, rlc::circuit::RlcCircuitParams, snark_verifier_sdk::{halo2::{aggregation::AggregationConfigParams, gen_snark_shplonk}, SHPLONK}, storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput}, utils::{component::promise_loader::single::PromiseLoaderParams, eth_circuit::create_circuit, snark_verifier::create_universal_aggregation_circuit},
+    halo2_base::{
+        gates::circuit::{BaseCircuitParams, CircuitBuilderStage},
+        utils::fs::gen_srs,
+        utils::halo2::KeygenCircuitIntent,
+    },
+    halo2_proofs::dev::MockProver,
+    halo2curves::bn256::Fr,
+    rlc::circuit::RlcCircuitParams,
+    snark_verifier_sdk::CircuitExt,
+    snark_verifier_sdk::{
+        halo2::{aggregation::AggregationConfigParams, gen_snark_shplonk},
+        SHPLONK,
+    },
+    storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput, EthStorageInput},
     utils::build_utils::pinning::PinnableCircuit,
-    snark_verifier_sdk::CircuitExt
+    utils::{
+        component::promise_loader::single::PromiseLoaderParams, eth_circuit::create_circuit,
+        snark_verifier::create_universal_aggregation_circuit,
+    },
 };
-use axiom_query::{components::subqueries::{account::circuit::CoreParamsAccountSubquery, storage::circuit::CoreParamsStorageSubquery}, keygen::shard::{ShardIntentAccount, ShardIntentHeader, ShardIntentResultsRoot, ShardIntentStorage}};
+use axiom_query::{
+    components::subqueries::{
+        account::circuit::CoreParamsAccountSubquery, storage::circuit::CoreParamsStorageSubquery,
+    },
+    keygen::shard::{
+        ShardIntentAccount, ShardIntentHeader, ShardIntentResultsRoot, ShardIntentStorage,
+    },
+};
 use ethers_core::types::Chain;
 
 mod utils;
@@ -15,11 +38,13 @@ use utils::test_input;
 async fn main() {
     env_logger::init();
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let storage_pinning_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit_pinning.json");
+    let storage_pinning_path =
+        format!("{cargo_manifest_dir}/artifacts/storage_circuit_pinning.json");
     let storage_pk_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.pk");
     let storage_vk_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.vk");
     let storage_circuit_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.shplonk");
-    let account_pinning_path = format!("{cargo_manifest_dir}/artifacts/account_circuit_pinning.json");
+    let account_pinning_path =
+        format!("{cargo_manifest_dir}/artifacts/account_circuit_pinning.json");
     let account_pk_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.pk");
     let account_vk_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.vk");
     let account_circuit_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.shplonk");
@@ -36,17 +61,18 @@ async fn main() {
 
     let block_account_input = EthStorageInput {
         addr: acc_input.address,
-        acct_pf : acc_input.eth_storage_input.acct_pf,
+        acct_pf: acc_input.eth_storage_input.acct_pf,
         acct_state: acc_input.eth_storage_input.acct_state,
         storage_pfs: acc_input.eth_storage_input.storage_pfs,
     };
 
-  let mut account_block_storage_proof = block_storage_input.clone();
-  account_block_storage_proof.storage = block_account_input;
+    let mut account_block_storage_proof = block_storage_input.clone();
+    account_block_storage_proof.storage = block_account_input;
 
     let storage_circuit = EthBlockStorageCircuit::<Fr>::new(block_storage_input, Chain::Gnosis);
 
-    let account_circuit = EthBlockStorageCircuit::<Fr>::new(account_block_storage_proof, Chain::Gnosis);
+    let account_circuit =
+        EthBlockStorageCircuit::<Fr>::new(account_block_storage_proof, Chain::Gnosis);
 
     let base_params = BaseCircuitParams {
         k: 20,
@@ -63,7 +89,11 @@ async fn main() {
 
     let acc_rlc_params = storage_rlc_params.clone();
 
-    let mut storage_circuit = create_circuit(CircuitBuilderStage::Mock, storage_rlc_params, storage_circuit);
+    let mut storage_circuit = create_circuit(
+        CircuitBuilderStage::Mock,
+        storage_rlc_params,
+        storage_circuit,
+    );
     storage_circuit.mock_fulfill_keccak_promises(None);
     // circuit.calculate_params();
 
@@ -74,9 +104,9 @@ async fn main() {
 
     // println!("{:?}", storage_prover.verify());
 
-    let mut account_circuit = create_circuit(CircuitBuilderStage::Mock, acc_rlc_params, account_circuit);
+    let mut account_circuit =
+        create_circuit(CircuitBuilderStage::Mock, acc_rlc_params, account_circuit);
     account_circuit.mock_fulfill_keccak_promises(None);
-
 
     // let instances = account_circuit.instances();
     // println!("instances {instances:?}");
@@ -86,14 +116,14 @@ async fn main() {
     // println!("{:?}", account_prover.verify());
 
     ////////////////////////////////////////////////WIP
-    
+
     let k = 20;
     let aggr_params = AggregationConfigParams {
         degree: k,
-        lookup_bits: (k-1) as usize,
-        num_advice: 19,             
+        lookup_bits: (k - 1) as usize,
+        num_advice: 19,
         num_lookup_advice: 3,
-        num_fixed: 3,                 //USER_FIXED_COLS,
+        num_fixed: 3, //USER_FIXED_COLS,
     };
     let kzg_params = gen_srs(k as u32);
 
@@ -101,8 +131,10 @@ async fn main() {
 
     //TODO
     let storage_pk = {
-        let core_params =
-            CoreParamsStorageSubquery { capacity: 1, max_trie_depth: 13 };
+        let core_params = CoreParamsStorageSubquery {
+            capacity: 1,
+            max_trie_depth: 13,
+        };
         let loader_params = (
             PromiseLoaderParams::new_for_one_shard(200),
             PromiseLoaderParams::new_for_one_shard(1),
@@ -110,7 +142,7 @@ async fn main() {
         let storage_intent = ShardIntentStorage {
             core_params: core_params.clone(),
             loader_params: loader_params.clone(),
-            k:20,
+            k: 20,
             lookup_bits: 19,
         };
         let keygen_circuit = storage_intent.build_keygen_circuit();
@@ -118,14 +150,19 @@ async fn main() {
             .create_pk(&kzg_params, &storage_pk_path, &storage_pinning_path)
             .expect("strg pk and pinning");
         let mut vk_file = File::create(&storage_vk_path).expect("strg vk bin file");
-        storage_pk.get_vk().write(&mut vk_file, axiom_eth::halo2_proofs::SerdeFormat::RawBytes).expect("strg vk bin write");
+        storage_pk
+            .get_vk()
+            .write(&mut vk_file, axiom_eth::halo2_proofs::SerdeFormat::RawBytes)
+            .expect("strg vk bin write");
 
         storage_pk
     };
-    
+
     let account_pk = {
-        let core_params =
-            CoreParamsAccountSubquery { capacity: 1, max_trie_depth: 14 };
+        let core_params = CoreParamsAccountSubquery {
+            capacity: 1,
+            max_trie_depth: 14,
+        };
         let loader_params = (
             PromiseLoaderParams::new_for_one_shard(200),
             PromiseLoaderParams::new_for_one_shard(1), //132), //HEADER_CAPACITY),
@@ -148,21 +185,31 @@ async fn main() {
 
         account_pk
     };
-    
+
     log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ generating storage snark");
-    let snark_storage = gen_snark_shplonk(&kzg_params, &storage_pk, storage_circuit, Some(&storage_circuit_path));
+    let snark_storage = gen_snark_shplonk(
+        &kzg_params,
+        &storage_pk,
+        storage_circuit,
+        Some(&storage_circuit_path),
+    );
     log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ generating account snark");
-    let snark_account = gen_snark_shplonk(&kzg_params, &account_pk, account_circuit, Some(&account_circuit_path));
+    let snark_account = gen_snark_shplonk(
+        &kzg_params,
+        &account_pk,
+        account_circuit,
+        Some(&account_circuit_path),
+    );
     let snarks = vec![snark_storage, snark_account];
 
     let (mut aggr_circuit, previous_instances, agg_vkey_hash) =
-    create_universal_aggregation_circuit::<SHPLONK>(
-        CircuitBuilderStage::Prover,
-        aggr_params,
-        &kzg_params,
-        snarks,
-        agg_vkey_hash_indices,
-    );
+        create_universal_aggregation_circuit::<SHPLONK>(
+            CircuitBuilderStage::Prover,
+            aggr_params,
+            &kzg_params,
+            snarks,
+            agg_vkey_hash_indices,
+        );
 
     let aggr_instances = aggr_circuit.instances();
     // println!("instances {aggr_instances:?}");
