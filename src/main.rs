@@ -1,9 +1,11 @@
 use std::fs::File;
 
 use axiom_eth::{
-    halo2_base::{gates::circuit::{BaseCircuitParams, CircuitBuilderStage}, utils::fs::gen_srs}, halo2_proofs::dev::MockProver, halo2curves::bn256::Fr, rlc::circuit::RlcCircuitParams, snark_verifier_sdk::{halo2::{aggregation::AggregationConfigParams, gen_snark_shplonk}, SHPLONK}, storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput}, utils::{component::promise_loader::single::PromiseLoaderParams, eth_circuit::create_circuit, snark_verifier::create_universal_aggregation_circuit}
+    halo2_base::{gates::circuit::{BaseCircuitParams, CircuitBuilderStage},utils::halo2::KeygenCircuitIntent, utils::fs::gen_srs}, halo2_proofs::dev::MockProver, halo2curves::bn256::Fr, rlc::circuit::RlcCircuitParams, snark_verifier_sdk::{halo2::{aggregation::AggregationConfigParams, gen_snark_shplonk}, SHPLONK}, storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput}, utils::{component::promise_loader::single::PromiseLoaderParams, eth_circuit::create_circuit, snark_verifier::create_universal_aggregation_circuit},
+    utils::build_utils::pinning::PinnableCircuit,
+    snark_verifier_sdk::CircuitExt
 };
-use axiom_query::{keygen::shard::{ShardIntentAccount, ShardIntentHeader, ShardIntentResultsRoot, ShardIntentStorage}};
+use axiom_query::{components::subqueries::{account::circuit::CoreParamsAccountSubquery, storage::circuit::CoreParamsStorageSubquery}, keygen::shard::{ShardIntentAccount, ShardIntentHeader, ShardIntentResultsRoot, ShardIntentStorage}};
 use ethers_core::types::Chain;
 
 mod utils;
@@ -17,6 +19,10 @@ async fn main() {
     let storage_pk_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.pk");
     let storage_vk_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.vk");
     let storage_circuit_path = format!("{cargo_manifest_dir}/artifacts/storage_circuit.shplonk");
+    let account_pinning_path = format!("{cargo_manifest_dir}/artifacts/account_circuit_pinning.json");
+    let account_pk_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.pk");
+    let account_vk_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.vk");
+    let account_circuit_path = format!("{cargo_manifest_dir}/artifacts/account_circuit.shplonk");
     let input = test_input().await.expect("input");
     let acc_input = input.clone();
 
@@ -160,7 +166,7 @@ async fn main() {
 
     let aggr_instances = aggr_circuit.instances();
     // println!("instances {aggr_instances:?}");
-    log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ instances {aggr_instances:?");
+    log::info!("✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞✞ instances {:?}", aggr_instances);
 
     let aggr_prover = MockProver::run(20, &aggr_circuit, aggr_instances).unwrap();
 
