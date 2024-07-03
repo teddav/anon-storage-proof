@@ -1,12 +1,10 @@
 use anyhow::{Context as _, Result};
 use axiom_eth::{
-    mpt::KECCAK_RLP_EMPTY_STRING,
-    providers::storage::json_to_mpt_input,
-    providers::{block::get_block_rlp, setup_provider},
-    storage::circuit::EthStorageInput,
+    mpt::KECCAK_RLP_EMPTY_STRING, providers::block::get_block_rlp,
+    providers::storage::json_to_mpt_input, storage::circuit::EthStorageInput,
 };
+use ethers::providers::{Middleware, Provider};
 use ethers_core::types::{Address, Block, EIP1186ProofResponse, H160, H256};
-use ethers_providers::{Middleware, Provider};
 use serde::{Deserialize, Serialize};
 use tiny_keccak::{Hasher, Keccak};
 

@@ -1,18 +1,21 @@
+use anyhow::Result;
 use axiom_eth::{
     halo2_base::gates::circuit::{BaseCircuitParams, CircuitBuilderStage},
     halo2_proofs::dev::MockProver,
     halo2curves::bn256::Fr,
     rlc::circuit::RlcCircuitParams,
-    storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput,EthStorageInput},
+    storage::circuit::{EthBlockStorageCircuit, EthBlockStorageInput, EthStorageInput},
     utils::eth_circuit::create_circuit,
 };
 use ethers_core::types::Chain;
 
+mod get_proof;
 mod utils;
+
 use utils::test_input;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let input = test_input().await.expect("input");
     let acc_input = input.clone();
 
@@ -26,18 +29,18 @@ async fn main() {
 
     let block_account_input = EthStorageInput {
         addr: acc_input.address,
-        acct_pf : acc_input.eth_storage_input.acct_pf,
+        acct_pf: acc_input.eth_storage_input.acct_pf,
         acct_state: acc_input.eth_storage_input.acct_state,
         storage_pfs: acc_input.eth_storage_input.storage_pfs,
     };
 
-  let mut account_block_storage_proof = block_storage_input.clone();
-  account_block_storage_proof.storage = block_account_input;
-
+    let mut account_block_storage_proof = block_storage_input.clone();
+    account_block_storage_proof.storage = block_account_input;
 
     let storage_circuit = EthBlockStorageCircuit::<Fr>::new(block_storage_input, Chain::Gnosis);
 
-    let account_circuit = EthBlockStorageCircuit::<Fr>::new(account_block_storage_proof, Chain::Gnosis);
+    let account_circuit =
+        EthBlockStorageCircuit::<Fr>::new(account_block_storage_proof, Chain::Gnosis);
 
     let base_params = BaseCircuitParams {
         k: 20,
@@ -54,7 +57,11 @@ async fn main() {
 
     let acc_rlc_params = storage_rlc_params.clone();
 
-    let mut storage_circuit = create_circuit(CircuitBuilderStage::Mock, storage_rlc_params, storage_circuit);
+    let mut storage_circuit = create_circuit(
+        CircuitBuilderStage::Mock,
+        storage_rlc_params,
+        storage_circuit,
+    );
     storage_circuit.mock_fulfill_keccak_promises(None);
     // circuit.calculate_params();
 
@@ -65,9 +72,9 @@ async fn main() {
 
     println!("{:?}", storage_prover.verify());
 
-    let mut account_circuit = create_circuit(CircuitBuilderStage::Mock, acc_rlc_params, account_circuit);
+    let mut account_circuit =
+        create_circuit(CircuitBuilderStage::Mock, acc_rlc_params, account_circuit);
     account_circuit.mock_fulfill_keccak_promises(None);
-
 
     let instances = account_circuit.instances();
     println!("instances {instances:?}");
@@ -75,6 +82,8 @@ async fn main() {
     let account_prover = MockProver::run(20, &account_circuit, instances).unwrap();
 
     println!("{:?}", account_prover.verify());
+
+    Ok(())
 }
 
 // fn get_circuit() {

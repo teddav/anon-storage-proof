@@ -7,7 +7,12 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.81"
-axiom-eth = { git = "https://github.com/axiom-crypto/axiom-eth.git", features = [
+# axiom-eth = { git = "https://github.com/axiom-crypto/axiom-eth.git", features = [
+#     "evm",
+#     "halo2-axiom",
+#     "providers",
+# ] }
+axiom-eth = { path = "./axiom-eth/axiom-eth", features = [
     "evm",
     "halo2-axiom",
     "providers",
