@@ -59,9 +59,8 @@ contract SafeHalo2Test is TestUtils {
         );
         execTransaction(safe, address(safe), txData_enableModule);
 
-        Counter counter = new Counter();
-        counter.setNumber(123);
-        assertEq(counter.number(), 123);
+        Counter counter = new Counter(address(safe));
+        assertEq(counter.number(), 0);
 
         bytes memory txData_execModuleTx = abi.encodeWithSelector(
             Counter.setNumber.selector,

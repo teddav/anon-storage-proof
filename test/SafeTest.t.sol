@@ -16,13 +16,14 @@ contract SafeTest is TestUtils {
     }
 
     function test_ExecuteTx() public {
-        Counter counter = new Counter();
-        counter.setNumber(123);
-
         Safe safe = deployAndSetupSafe();
 
-        assertEq(counter.number(), 123);
+        Counter counter = new Counter(address(safe));
+        assertEq(counter.number(), 0);
         assertEq(safe.nonce(), 0);
+
+        vm.expectRevert("not admin");
+        counter.setNumber(1);
 
         bytes memory txData = abi.encodeWithSelector(
             Counter.setNumber.selector,
@@ -44,9 +45,8 @@ contract SafeTest is TestUtils {
         );
         execTransaction(safe, address(safe), txData_enableModule);
 
-        Counter counter = new Counter();
-        counter.setNumber(123);
-        assertEq(counter.number(), 123);
+        Counter counter = new Counter(address(safe));
+        assertEq(counter.number(), 0);
 
         bytes memory txData_execModuleTx = abi.encodeWithSelector(
             Counter.setNumber.selector,
