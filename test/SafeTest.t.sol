@@ -34,7 +34,7 @@ contract SafeTest is TestUtils {
         assertEq(safe.nonce(), 1);
     }
 
-    function test_DeployModule() public {
+    function test_ExecTxFromModule() public {
         Safe safe = deployAndSetupSafe();
         SafeBasicModule module = new SafeBasicModule(address(safe));
 
