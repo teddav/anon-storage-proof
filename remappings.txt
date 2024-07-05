@@ -1,0 +1,1 @@
+safe-contracts/=lib/safe-contracts/contracts/

@@ -1,0 +1,6 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+
+fs_permissions = [{ access = "read", path = "zk_proof.json" }]
