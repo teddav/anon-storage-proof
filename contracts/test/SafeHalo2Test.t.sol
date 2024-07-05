@@ -5,11 +5,11 @@ import {console, stdJson} from "forge-std/Test.sol";
 import {Safe} from "safe-contracts/Safe.sol";
 import {ModuleManager} from "safe-contracts/base/ModuleManager.sol";
 
-import {Counter} from "../contracts/Counter.sol";
-import {SafeHalo2Module} from "../contracts/SafeHalo2Module.sol";
+import {Counter} from "../src/Counter.sol";
+import {SafeHalo2Module} from "../src/SafeHalo2Module.sol";
 import {TestUtils} from "./utils.sol";
-import {Halo2Verifier} from "../contracts/Verifier.sol";
-import {Halo2VerifyingKey} from "../contracts/VerifyingKey.sol";
+import {Halo2Verifier} from "../src/Verifier.sol";
+import {Halo2VerifyingKey} from "../src/VerifyingKey.sol";
 
 contract SafeHalo2Test is TestUtils {
     using stdJson for string;

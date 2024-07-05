@@ -5,8 +5,8 @@ import {console} from "forge-std/Test.sol";
 import {Safe} from "safe-contracts/Safe.sol";
 import {ModuleManager} from "safe-contracts/base/ModuleManager.sol";
 
-import {Counter} from "../contracts/Counter.sol";
-import {SafeBasicModule} from "../contracts/SafeBasicModule.sol";
+import {Counter} from "../src/Counter.sol";
+import {SafeBasicModule} from "../src/SafeBasicModule.sol";
 import {TestUtils} from "./utils.sol";
 
 contract SafeTest is TestUtils {
