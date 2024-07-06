@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.23;
 
+import {ISemaphore} from "./ISemaphore.sol";
 import {Enum} from "safe-contracts/common/Enum.sol";
-import {Halo2Verifier} from "./Verifier.sol";
-import {Halo2VerifyingKey} from "./VerifyingKey.sol";
 
 interface GnosisSafe {
     /// @dev Allows a Module to execute a Safe transaction without any further confirmations.
@@ -19,32 +18,29 @@ interface GnosisSafe {
     ) external returns (bool success);
 }
 
-contract SafeHalo2Module {
-    GnosisSafe public safe;
-    Halo2Verifier public verifier;
-    address public verifyingKey;
+contract SemaphoreVerifierModule {
+    GnosisSafe safe;
+    ISemaphore public semaphore;
+    uint256 public groupId;
 
-    constructor(address _safe, address _verifier, address _verifyingKey) {
+    constructor(address _safe, ISemaphore _semaphore) {
         safe = GnosisSafe(_safe);
-        verifier = Halo2Verifier(_verifier);
-        verifyingKey = _verifyingKey;
+        semaphore = _semaphore;
+        groupId = semaphore.createGroup();
     }
 
     function execAnyTx(
-        bytes calldata proof,
-        uint256[] calldata instances,
+        ISemaphore.SemaphoreProof calldata proof,
         address to,
         uint256 value,
         bytes calldata data
     ) public {
-        require(verifyProof(proof, instances), "proof could not be verified");
+        semaphore.validateProof(groupId, proof);
         safe.execTransactionFromModule(to, value, data, Enum.Operation.Call);
     }
 
-    function verifyProof(
-        bytes calldata proof,
-        uint256[] calldata instances
-    ) public view returns (bool) {
-        return verifier.verifyProof(verifyingKey, proof, instances);
+    function addMember(uint256 identityCommitment) external {
+        // we need to check if the identity corresponds to one of the signers
+        semaphore.addMember(groupId, identityCommitment);
     }
 }
