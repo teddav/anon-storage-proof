@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.23;
 
 import {Enum} from "safe-contracts/common/Enum.sol";
 
@@ -18,7 +18,7 @@ interface GnosisSafe {
 }
 
 contract SafeBasicModule {
-    GnosisSafe safe;
+    GnosisSafe public safe;
 
     constructor(address _safe) {
         safe = GnosisSafe(_safe);

@@ -1,9 +1,10 @@
 [package]
-name = "private-storage-proof"
+name = "anon-storage-proof"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["teddav <https://github.com/teddav>"]
+categories = ["cryptography"]
+keywords = ["storage proof", "halo2", "cryptography", "zkp", "zero-knowledge"]
 
 [dependencies]
 anyhow = "1.0.81"

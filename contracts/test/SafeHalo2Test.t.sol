@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.23;
 
 import {console, stdJson} from "forge-std/Test.sol";
 import {Safe} from "safe-contracts/Safe.sol";
@@ -8,8 +8,8 @@ import {ModuleManager} from "safe-contracts/base/ModuleManager.sol";
 import {Counter} from "../src/Counter.sol";
 import {SafeHalo2Module} from "../src/SafeHalo2Module.sol";
 import {TestUtils} from "./utils.sol";
-import {Halo2Verifier} from "../src/Verifier.sol";
-import {Halo2VerifyingKey} from "../src/VerifyingKey.sol";
+import {Halo2Verifier} from "../src/Halo2Verifier.sol";
+import {Halo2VerifyingKey} from "../src/Halo2VerifyingKey.sol";
 
 contract SafeHalo2Test is TestUtils {
     using stdJson for string;

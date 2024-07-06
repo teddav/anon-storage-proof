@@ -1,0 +1,16 @@
+{
+  "name": "semaphore-proof",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@semaphore-protocol/group": "^4.0.0-beta.16",
+    "@semaphore-protocol/identity": "^4.0.0-beta.16",
+    "@semaphore-protocol/proof": "^4.0.0-beta.16",
+    "ethers": "^6.13.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  }
+}

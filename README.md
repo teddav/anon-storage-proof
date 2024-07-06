@@ -1,4 +1,10 @@
+# Anon storage proof
+
+Prove that you know the preimage of a hash stored somewhere on chain.
+
 # Submodules
+
+I struggled with submodules, so that's just a reminder for me 😅
 
 ```bash
 forge install safe-contracts=safe-global/safe-smart-account@v1.4.1
