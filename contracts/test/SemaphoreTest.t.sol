@@ -2,9 +2,12 @@
 pragma solidity ^0.8.23;
 
 import {console} from "forge-std/Test.sol";
+import {Safe} from "safe-contracts/Safe.sol";
+import {ModuleManager} from "safe-contracts/base/ModuleManager.sol";
 
 import {TestUtils} from "./utils.sol";
 import {ISemaphore} from "../src/ISemaphore.sol";
+import {SemaphoreMasterModule} from "../src/SemaphoreVerifierModule.sol";
 
 contract SemaphoreTest is TestUtils {
     ISemaphore semaphore;
@@ -56,5 +59,80 @@ contract SemaphoreTest is TestUtils {
             ISemaphore.Semaphore__YouAreUsingTheSameNullifierTwice.selector
         );
         semaphore.validateProof(groupId, proof);
+    }
+
+    function test_SemaphoreModuleAddMember() public {
+        Safe safe = deployAndSetupSafe();
+        SemaphoreMasterModule module = new SemaphoreMasterModule(
+            address(safe),
+            semaphore
+        );
+
+        bytes memory txData_enableModule = abi.encodeWithSelector(
+            ModuleManager.enableModule.selector,
+            address(module)
+        );
+        execTransaction(safe, address(safe), txData_enableModule);
+
+        uint256 commitment = 1772263923816844738218801185744046056658685953373862850595384902837154819354;
+        bytes memory data = abi.encode(commitment);
+        bytes32 dataHash = keccak256(data);
+        bytes memory signatures = getSignature(dataHash);
+
+        module.addRemoveMember(
+            SemaphoreMasterModule.MemberAction.AddMember,
+            dataHash,
+            data,
+            signatures
+        );
+
+        require(semaphore.hasMember(module.groupId(), commitment));
+    }
+
+    function test_SemaphoreModuleRemoveMember() public {
+        Safe safe = deployAndSetupSafe();
+        SemaphoreMasterModule module = new SemaphoreMasterModule(
+            address(safe),
+            semaphore
+        );
+
+        bytes memory txData_enableModule = abi.encodeWithSelector(
+            ModuleManager.enableModule.selector,
+            address(module)
+        );
+        execTransaction(safe, address(safe), txData_enableModule);
+
+        uint256 commitment = 1772263923816844738218801185744046056658685953373862850595384902837154819354;
+        bytes memory data = abi.encode(commitment);
+        bytes32 dataHash = keccak256(data);
+        bytes memory signatures = getSignature(dataHash);
+
+        module.addRemoveMember(
+            SemaphoreMasterModule.MemberAction.AddMember,
+            dataHash,
+            data,
+            signatures
+        );
+        require(semaphore.hasMember(module.groupId(), commitment));
+
+        uint256[] memory siblings = new uint256[](2);
+        siblings[
+            0
+        ] = 18332492625122532256147860717901555793783137999081466661877342842509167197884;
+        siblings[
+            1
+        ] = 14666505891533126344042109479207383749941956403874345698933763060880398309605;
+
+        bytes memory data2 = abi.encode(commitment, siblings);
+        bytes32 dataHash2 = keccak256(data2);
+        bytes memory signatures2 = getSignature(dataHash2);
+
+        module.addRemoveMember(
+            SemaphoreMasterModule.MemberAction.RemoveMember,
+            dataHash2,
+            data2,
+            signatures2
+        );
+        require(!semaphore.hasMember(module.groupId(), commitment));
     }
 }

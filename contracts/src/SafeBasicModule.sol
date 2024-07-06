@@ -18,7 +18,7 @@ interface GnosisSafe {
 }
 
 contract SafeBasicModule {
-    GnosisSafe safe;
+    GnosisSafe public safe;
 
     constructor(address _safe) {
         safe = GnosisSafe(_safe);

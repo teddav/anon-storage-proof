@@ -16,10 +16,23 @@ interface GnosisSafe {
         bytes calldata data,
         Enum.Operation operation
     ) external returns (bool success);
+
+    function isOwner(address owner) external view returns (bool);
+
+    function checkSignatures(
+        bytes32 dataHash,
+        bytes memory data,
+        bytes memory signatures
+    ) external view;
 }
 
-contract SemaphoreVerifierModule {
-    GnosisSafe safe;
+contract SemaphoreMasterModule {
+    enum MemberAction {
+        AddMember,
+        RemoveMember
+    }
+
+    GnosisSafe public safe;
     ISemaphore public semaphore;
     uint256 public groupId;
 
@@ -39,8 +52,28 @@ contract SemaphoreVerifierModule {
         safe.execTransactionFromModule(to, value, data, Enum.Operation.Call);
     }
 
-    function addMember(uint256 identityCommitment) external {
-        // we need to check if the identity corresponds to one of the signers
-        semaphore.addMember(groupId, identityCommitment);
+    function addRemoveMember(
+        MemberAction action,
+        bytes32 dataHash,
+        bytes memory data,
+        bytes memory signatures
+    ) external {
+        safe.checkSignatures(dataHash, data, signatures);
+
+        if (action == MemberAction.AddMember) {
+            uint256 identityCommitment = abi.decode(data, (uint256));
+            semaphore.addMember(groupId, identityCommitment);
+        } else if (action == MemberAction.RemoveMember) {
+            (
+                uint256 identityCommitment,
+                uint256[] memory merkleProofSiblings
+            ) = abi.decode(data, (uint256, uint256[]));
+
+            semaphore.removeMember(
+                groupId,
+                identityCommitment,
+                merkleProofSiblings
+            );
+        }
     }
 }

@@ -2,8 +2,8 @@
 pragma solidity ^0.8.23;
 
 import {Enum} from "safe-contracts/common/Enum.sol";
-import {Halo2Verifier} from "./Verifier.sol";
-import {Halo2VerifyingKey} from "./VerifyingKey.sol";
+import {Halo2Verifier} from "./Halo2Verifier.sol";
+import {Halo2VerifyingKey} from "./Halo2VerifyingKey.sol";
 
 interface GnosisSafe {
     /// @dev Allows a Module to execute a Safe transaction without any further confirmations.

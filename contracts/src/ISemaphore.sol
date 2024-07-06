@@ -128,4 +128,9 @@ interface ISemaphore {
         uint256 groupId,
         SemaphoreProof calldata proof
     ) external view returns (bool);
+
+    function hasMember(
+        uint256 groupId,
+        uint256 identityCommitment
+    ) external view returns (bool);
 }

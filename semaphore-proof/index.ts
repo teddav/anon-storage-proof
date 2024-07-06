@@ -41,6 +41,7 @@ async function main() {
   console.log(group.members);
 
   let merkleProof = group.generateMerkleProof(0);
+  console.log("merkleProof", merkleProof);
 
   const message = "im part of the group";
   const scope = group.root;

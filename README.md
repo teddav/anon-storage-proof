@@ -1,6 +1,6 @@
 # Anon storage proof
 
-The idea is to be able to prove that you know the preimage of a hash stored somewhere on chain
+Prove that you know the preimage of a hash stored somewhere on chain.
 
 # Submodules
 
